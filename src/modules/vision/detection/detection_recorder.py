@@ -5,13 +5,13 @@ import queue
 import time
 import cv2
 
-
 class DetectionRecording:
 
     def __init__(self, target_file: Path, fps=30, size=(640, 480)):
         self._fps = fps
         self._frame_interval = 1.0 / fps
         self._size = size
+        self._expected = (size[1], size[0], 3)
 
         self._frame_queue = queue.Queue(maxsize=200)
         self._stop_event = threading.Event()
@@ -23,6 +23,7 @@ class DetectionRecording:
         self._last_frame = None
 
         fourcc = cv2.VideoWriter_fourcc(*"XVID")
+
         self.out = cv2.VideoWriter(target_file, fourcc, fps, size)
 
     def _record_worker(self):
@@ -41,6 +42,9 @@ class DetectionRecording:
             # Write frames aligned to real time
             while self._next_pts_time <= ts:
                 if self._last_frame is not None:
+                    if self._expected != self._last_frame.shape:
+                        self._last_frame = cv2.resize(self._last_frame, self._size)
+
                     self.out.write(self._last_frame)
 
                 self._next_pts_time += self._frame_interval
