@@ -113,7 +113,7 @@ class DS2DY9250IAXA(BaseVendor):
         except Exception as e:
             logger.error(f"❌ Failed to connect to PTZ camera at {self._host}: {e}")
 
-        threading.Thread(target=self.update_status_thread, daemon=True).start()
+        threading.Thread(target=self._update_status_loop, daemon=True).start()
 
     @staticmethod
     def _build_absolute_position_xml(
@@ -594,8 +594,11 @@ class DS2DY9250IAXA(BaseVendor):
             self.rtsp_stream = None
             logger.info("📷 RTSP stream released.")
 
-    def update_status_thread(self):
-        """Continuously update PTZ status in a separate thread."""
+    def _update_status_loop(self):
+        """
+        Continuously update PTZ status in a separate thread.
+        Send on the IPC status informations
+        """
         ipc = get_ipc_handler()
         while True:
             self._update_status()
