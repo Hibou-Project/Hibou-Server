@@ -10,6 +10,7 @@ from src.modules.audio.localization.strategies.gcc_phat.strategy import Analyzer
 from src.modules.audio.streaming import GstChannel
 from src.modules.audio.streaming.play import play_sample
 from src.settings import SETTINGS
+from src.helpers.ipc.base_ipc import get_ipc_handler
 
 
 class AudioDispatcher:
@@ -27,6 +28,8 @@ class AudioDispatcher:
 
         self.analyzer = Analyzer(SETTINGS.AUDIO_REC_HZ)
 
+        self.ipc = get_ipc_handler()
+
     def process(self, audio_samples: list[GstChannel]):
         self.audio_queue.append(audio_samples)
 
@@ -37,13 +40,7 @@ class AudioDispatcher:
         self.predictions_queue.append(res)
         self.probabilities_queue.append(prb)
 
-        # print(res)
-        # print(prb)
-        # if any(res):
-        #     print("Drone")
-        # else:
-        #     print("Other")
-        base_ipc.get_ipc_handler().publish(SETTINGS.IPC_ACOUSTIC_DETECTION_TOPIC, "drone" if any(res) else "other")
+        self.ipc.publish(SETTINGS.IPC_ACOUSTIC_DETECTION_TOPIC, "drone" if any(res) else "other")
 
         i = 0
         for audio, pts in audio_samples:
@@ -60,7 +57,8 @@ class AudioDispatcher:
             )
             i += 1
 
-        self.analyzer.get_angle()
+        angle = self.analyzer.get_angle()
+        self.ipc.publish(SETTINGS.IPC_ACOUSTIC_ANGLE_TOPIC, f"{angle}")
 
     def get_last_channels(self) -> list[GstChannel] | None:
         try:
