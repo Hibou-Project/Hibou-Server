@@ -13,6 +13,10 @@ class MicInfo:
     ypos: float
     orientation: float
 
+    @staticmethod
+    def from_dict(data: dict) -> None:
+        return MicInfo(channel = data["channel"], xpos = data["xpos"], ypos = data["ypos"], orientation = data["orientation"])
+
 
 @dataclass
 class TimestampedData:

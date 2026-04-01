@@ -1,0 +1,22 @@
+{
+  "array": [
+    {
+      "channel": 0,
+      "xpos": 0.2,
+      "ypos": 0.0,
+      "orientation": 0.0
+    },
+    {
+      "channel": 1,
+      "xpos": 0.17320508075688776,
+      "ypos": 0.1,
+      "orientation": 30.0
+    },
+    {
+      "channel": 2,
+      "xpos": 0.1,
+      "ypos": -0.17320508075688773,
+      "orientation": 60.0
+    }
+  ]
+}
