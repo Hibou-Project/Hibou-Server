@@ -5,7 +5,7 @@ import numpy as np
 from src.arguments import args
 from src.modules.audio.detection.ai import ModelProxy
 from src.modules.audio.localization.data import AudioBuffer, InferenceResult, MicInfo
-from src.modules.audio.localization.strategies.stronger.strategy import Analyzer
+from src.modules.audio.localization.strategies.energy.strategy import Analyzer
 from src.modules.audio.streaming import GstChannel
 from src.modules.audio.streaming.play import play_sample
 from src.settings import SETTINGS
@@ -54,13 +54,13 @@ class AudioDispatcher:
         self.predictions_queue.append(res)
         self.probabilities_queue.append(prb)
 
-        serialized_preds = str(list(res))[1:-1]
+        serialized_preds = str([int(pred) for pred in res])[1:-1]
         self.ipc.publish(SETTINGS.IPC_ACOUSTIC_DETECTION_TOPIC, serialized_preds)
-
-        # if any(res):
-        #     print("Drone detected")
-        # else:
-        #     print("No drone detected")
+        print(res)
+        if any(res):
+            print("Drone detected")
+        else:
+            print("No drone detected")
 
         i = 0
         for audio, pts in audio_samples:
@@ -78,6 +78,7 @@ class AudioDispatcher:
             i += 1
 
         angle = self.analyzer.get_angle()
+        print("angle: ", angle)
         self.ipc.publish(SETTINGS.IPC_ACOUSTIC_ANGLE_TOPIC, f"{float(angle)}")
 
     def get_last_channels(self) -> list[GstChannel] | None:

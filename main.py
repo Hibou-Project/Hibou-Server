@@ -44,8 +44,8 @@ if __name__ == "__main__":
     try:
         with managed_processes(
             [
-                # AudioWorker,
-                # VisionWorker,
+                AudioWorker,
+                VisionWorker,
                 DecisionWorker,
             ]
         ):
