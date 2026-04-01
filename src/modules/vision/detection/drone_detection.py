@@ -76,7 +76,7 @@ class DroneDetection:
 
             if self.enable_recording or display:
                 annotated_frame = results[0].plot()
-                self.ipc_publisher.publish(frame, annotated_frame)
+                self.ipc_publisher.publish(annotated_frame)
 
                 if self.enable_recording:
                     self.recording.update_frame(annotated_frame)
