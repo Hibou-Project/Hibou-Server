@@ -125,6 +125,11 @@ class AudioWorker:
             if not audio.is_empty():
                 channels = audio.get_last_channels()
 
+                #  Only for debug purposes
+                energies = [compute_energy(ch) for ch in channels]
+                if SETTINGS.AUDIO_RADAR and radar_plot is not None:
+                    radar_plot.set_input(phi_angle, max(energies))
+
                 # Only for debug purposes
                 if SETTINGS.AUDIO_ENERGY_SPECTRUM and energy_spectrum_plot is not None:
                     energy_spectrum_plot.set_input(energies)
@@ -133,10 +138,6 @@ class AudioWorker:
                 if SETTINGS.AUDIO_STFT_SPECTRUM and stft_spectrum_plot is not None:
                     stft_spectrum_plot.set_input([channel[0] for channel in channels])
 
-                #  Only for debug purposes
-                energies = [compute_energy(ch) for ch in channels]
-                if SETTINGS.AUDIO_RADAR and radar_plot is not None:
-                    radar_plot.set_input(phi_angle, max(energies))
 
             if stft_spectrum_plot:
                 stft_spectrum_plot.update()

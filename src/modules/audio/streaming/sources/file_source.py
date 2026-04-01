@@ -104,7 +104,7 @@ class FileAudioSource(GstreamerSource):
 
             gst_pipeline_str += (
                 f"concat name=c ! "
-                f"audioconvert ! "
+                f"audioconvert ! audioresample ! "
                 f"audio/x-raw, format=(string)F32LE, rate=(int){rec_hz}, channels=(int)1 ! "  # All files should contain only one channel.
                 f"identity sync=true ! "  # Throttle to real time
                 f"tee name=t "
