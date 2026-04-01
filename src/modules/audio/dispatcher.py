@@ -33,8 +33,6 @@ class AudioDispatcher:
             for info in mic_array
         ]
 
-        print(mic_infos)
-
         self.analyzer = Analyzer(SETTINGS.AUDIO_REC_HZ, mic_infos)
 
     def process(self, audio_samples: list[GstChannel]):

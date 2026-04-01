@@ -14,7 +14,7 @@ class MicInfo:
     orientation: float
 
     @staticmethod
-    def from_dict(data: dict) -> None:
+    def from_dict(data: dict) -> "MicInfo":
         return MicInfo(channel = data["channel"], xpos = data["xpos"], ypos = data["ypos"], orientation = data["orientation"])
 
 
