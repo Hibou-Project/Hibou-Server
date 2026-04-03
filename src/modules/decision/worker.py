@@ -74,17 +74,16 @@ class DecisionWorker:
         while True:
             with self._condition:
                 while not self._angle_updated or not self._inference_updated or len(self.inferences) < 3 or len(self.angles) < 3:
-                    self.ipc.publish(SETTINGS.IPC_DECISION_ANGLE_TOPIC, "30")
                     self._condition.wait()
 
                 self._angle_updated = False
                 self._inference_updated = False
 
-                angle = self._strategy.decide(
+                angle = (self._strategy.decide(
                     tuple(self.angles),
                     tuple(self.inferences),
-                )
+                ) + SETTINGS.CAM_ANGLE_OFFSET + 360.0) % 360.0
+
                 self.ipc.publish(SETTINGS.IPC_DECISION_ANGLE_TOPIC, f"{angle}")
                 print("decision angle:", angle)
             self.system_status_updater.update()
-

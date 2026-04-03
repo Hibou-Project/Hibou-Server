@@ -73,6 +73,8 @@ class Settings:
 
     DECISION_STRATEGY: str
 
+    CAM_ANGLE_OFFSET: float
+
     AUDIO_PLAYBACK: bool = False  # Only for debug purposes
     AUDIO_ENERGY_SPECTRUM: bool = False  # Only for debug purposes
     AUDIO_STFT_SPECTRUM: bool = False  # Only for debug purposes
@@ -140,6 +142,7 @@ try:
         IPC_VIDEO_STREAMING_ANNOTATED_PORT=int(os.getenv("IPC_VIDEO_STREAMING_ANNOTATED_PORT")),
         IPC_SYSTEM_STATUS_TOPIC=os.getenv("IPC_SYSTEM_STATUS_TOPIC"),
         DECISION_STRATEGY=os.getenv("DECISION_STRATEGY", "consensus_opening"),
+        CAM_ANGLE_OFFSET=float(os.getenv("CAM_ANGLE_OFFSET", "0.0"))
     )
 
 

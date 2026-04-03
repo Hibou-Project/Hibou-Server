@@ -12,11 +12,18 @@ from src.modules.vision.devices.vendors.hikvision.ds_2dy9250iax_a import DS2DY92
 from src.modules.vision.tracking.ibvs_tracker import IBVSTracker
 from src.settings import SETTINGS
 from src.helpers.system_status import SystemStatusUpdater
+from src.helpers.ipc.base_ipc import get_ipc_handler
+import threading
 
 
 class VisionWorker:
     def __init__(self, dt: datetime.datetime):
         logger.info(f"Started Vision Worker | PID: {os.getpid()}")
+
+        self._condition = threading.Condition()
+        self._target_angle = 0.0
+        self.ipc = get_ipc_handler()
+        self.ipc.subscribe(SETTINGS.IPC_DECISION_ANGLE_TOPIC, self._update_angle_command)
         self.recs_folder_name = os.path.join(
             SETTINGS.REC_SAVE_FP,
             f"{dt.strftime('%Y-%m-%d_%H:%M:%S')}",
@@ -50,6 +57,8 @@ class VisionWorker:
             system_name="worker:vision",
         )
 
+        self._angle_updated = False
+
         self.start_time = time.time()
 
         try:
@@ -60,6 +69,11 @@ class VisionWorker:
             self.stream.stop_recording()
             self.drone_detector.stop()
             PTZController.remove()
+
+    def _update_angle_command(self, topic: str, angle: str):
+        print("Received", angle)
+        self._target_angle = float(angle)
+        self._angle_updated = True
 
     def run(self):
         PTZController("main_camera").set_absolute_ptz_position(
@@ -100,8 +114,17 @@ class VisionWorker:
 
             if time.time() - self.start_time > 5:
                 controls = self.tracker.update(best_box)
+                print("Timee")
 
-                if controls is not None:
+                # If we're not already tracking a drone, we can follow the decision system's command.
+                if controls is None:
+                    ctl = PTZController("main_camera")
+                    print("Updating", self._angle_updated)
+                    if self._angle_updated:
+                        self._angle_updated = False
+                        print("Target:", int(self._target_angle * 10))
+                        ctl.set_absolute_ptz_position(pan=int(self._target_angle * 10))
+                else:
                     pan_vel, tilt_vel, zoom_vel = controls
 
                     if pan_vel == 0 and tilt_vel == 0:
