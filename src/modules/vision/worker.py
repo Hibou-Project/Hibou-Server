@@ -1,6 +1,7 @@
 import time
 import datetime
 from pathlib import Path
+import numpy as np
 
 from src.logger import CustomLogger
 
@@ -15,6 +16,7 @@ from src.helpers.system_status import SystemStatusUpdater
 from src.helpers.ipc.base_ipc import get_ipc_handler
 import threading
 
+DENOM = 6/7
 
 class VisionWorker:
     def __init__(self, dt: datetime.datetime):
@@ -112,14 +114,26 @@ class VisionWorker:
                             best_conf = confidence
                             best_box = box
 
-            if time.time() - self.start_time > 5:
+            time_delta = time.time() - self.start_time
+            if time_delta > 5:
                 controls = self.tracker.update(best_box)
 
                 # If we're not already tracking a drone, we can follow the decision system's command.
                 if controls is None or best_box is None:
+
+                    ctl = PTZController("main_camera")
+
+                    tilt = (np.cos(time_delta * 0.5) + 1.0) * 0.5
+                    tilt *= ctl.TILT_RANGE.max - ctl.TILT_RANGE.min
+                    tilt += ctl.TILT_RANGE.min
+
                     if self._angle_updated:
                         self._angle_updated = False
-                        PTZController("main_camera").set_absolute_ptz_position(pan=self._target_angle)
+
+                        ctl.set_absolute_ptz_position(pan=self._target_angle, tilt=tilt)
+                    else:
+                        ctl.set_absolute_ptz_position(tilt=tilt)
+
                 else:
                     pan_vel, tilt_vel, zoom_vel = controls
 
