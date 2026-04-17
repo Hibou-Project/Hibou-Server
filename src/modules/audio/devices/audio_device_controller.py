@@ -1,17 +1,16 @@
-from dataclasses import asdict
-
-from src.logger import CustomLogger, blank_line_module
-
-logger = CustomLogger("audio").get_logger()
-from pathlib import Path
-from typing import List, Dict, Any
-
+from .controllers.yamaha.tio1608_d import YamahaTio1608Controller
 from .controllers.audinate.avio_ai2 import AvioAi2Controller
 from .controllers.base_controller import BaseController
-from .controllers.yamaha.tio1608_d import YamahaTio1608Controller
-from .dante.models import DanteADCDevice
-from src.helpers.decorators import singleton
+from src.logger import blank_line_module, CustomLogger
 from src.helpers.json import read_json, write_json
+from .utils.static_checkup import static_checkup
+from src.helpers.decorators import singleton
+from .dante.models import DanteADCDevice
+from typing import List, Dict, Any
+from dataclasses import asdict
+from pathlib import Path
+
+logger = CustomLogger("audio").get_logger()
 
 
 @singleton
@@ -27,7 +26,7 @@ class ADCControllerManager:
     @property
     def adc_devices(self) -> List[DanteADCDevice]:
         """
-        Return list of DanteADCDevice instances from all controllers.
+        Return a list of DanteADCDevice instances from all controllers.
         """
         _adc_devices: List[DanteADCDevice] = []
         for controller in self.controllers:
@@ -37,7 +36,7 @@ class ADCControllerManager:
 
     def load_devices_from_files(self, json_path: Path) -> None:
         """
-        Load controllers and devices from controllers_devices.json configuration file.
+        Load controllers and devices from the controllers_devices.json configuration file.
         Populates self.controllers with controller instances.
         """
         path = Path(json_path)
@@ -51,36 +50,18 @@ class ADCControllerManager:
         if not controllers_data:
             raise ValueError("No controllers found in the provided JSON file.")
 
-        # Map controller names to controller classes
-        controller_map: Dict[str, type] = {
-            "AVIOAI2": AvioAi2Controller,
-            "YamahaTio1608": YamahaTio1608Controller,
-        }
+        if not static_checkup(controllers_data):
+            raise ValueError("Updated device configuration failed static validation.")
 
         loaded_controllers: List[BaseController] = []
 
         for controller_data in controllers_data:
             controller_name = controller_data.get("name")
-            if not controller_name:
-                logger.warning("Skipping controller entry without name field")
-                continue
-
-            controller_class = controller_map.get(controller_name)
-            if not controller_class:
-                logger.warning(
-                    f"Unknown controller type '{controller_name}'. Supported types: {list(controller_map.keys())}"
-                )
-                continue
 
             try:
                 if controller_name == "AVIOAI2":
                     # AvioAi2Controller takes a list of DanteADCDevice instances
                     devices_data = controller_data.get("devices", [])
-                    if not devices_data:
-                        logger.warning(
-                            f"No devices found for controller {controller_name}"
-                        )
-                        continue
 
                     dante_devices = [DanteADCDevice(**dev) for dev in devices_data]
                     controller = AvioAi2Controller(dante_devices)
@@ -91,18 +72,10 @@ class ADCControllerManager:
 
                 elif controller_name == "YamahaTio1608":
                     # YamahaTio1608Controller takes an IP address string
-                    # Try to get IP from controller-level field, or from first device
+                    # Try to get IP from the controller-level field, or from the first device
                     ip = controller_data.get("ip")
                     devices_data = controller_data.get("devices", [])
 
-                    if not ip:
-                        if devices_data and len(devices_data) > 0:
-                            ip = devices_data[0].get("ipv4")
-                        if not ip:
-                            logger.warning(
-                                f"No IP address found for {controller_name} controller"
-                            )
-                            continue
                     default_ha_gains = None
                     if controller_data.get("ha_gains"):
                         default_ha_gains = controller_data.get("ha_gains")
@@ -110,7 +83,7 @@ class ADCControllerManager:
                         ip, auto_discovery=False, default_ha_gains=default_ha_gains
                     )
 
-                    # Load devices from JSON file instead of using scanned devices
+                    # Load devices from the JSON file instead of using scanned devices
                     if devices_data:
                         dante_devices = [DanteADCDevice(**dev) for dev in devices_data]
                         controller.adc_devices = dante_devices
@@ -138,7 +111,7 @@ class ADCControllerManager:
 
     def save_devices_to_files(self, json_path: Path) -> None:
         """
-        Save current controllers and their devices to controllers_devices.json configuration file.
+        Save current controllers and their devices to the controllers_devices.json configuration file.
         """
         if not self.controllers:
             logger.warning("No controllers to save. Skipping file write.")
