@@ -80,7 +80,8 @@ class Settings:
     AUDIO_STFT_SPECTRUM: bool = False  # Only for debug purposes
     AUDIO_RADAR: bool = False  # Only for debug purposes
     CV_VIDEO_PLAYBACK: bool = False  # Only for debug purposes
-    AUDIO_STRATEGY_REPORT: bool = False  # Only for debug purposes: generate detailed strategy info in a CSV
+    AUDIO_STRATEGY_REPORT: bool = False  # Only for debug: save strategy info in a CSV
+
 
 def parse_list(value: str):
     """Split a comma-separated string and strip whitespace."""
@@ -139,10 +140,12 @@ try:
         IPC_VISION_ANGLE_TOPIC=os.getenv("IPC_VISION_ANGLE_TOPIC"),
         IPC_PROXY_XSUB_PORT=int(os.getenv("IPC_PROXY_XSUB_PORT")),
         IPC_PROXY_XPUB_PORT=int(os.getenv("IPC_PROXY_XPUB_PORT")),
-        IPC_VIDEO_STREAMING_ANNOTATED_PORT=int(os.getenv("IPC_VIDEO_STREAMING_ANNOTATED_PORT")),
+        IPC_VIDEO_STREAMING_ANNOTATED_PORT=int(
+            os.getenv("IPC_VIDEO_STREAMING_ANNOTATED_PORT")
+        ),
         IPC_SYSTEM_STATUS_TOPIC=os.getenv("IPC_SYSTEM_STATUS_TOPIC"),
         DECISION_STRATEGY=os.getenv("DECISION_STRATEGY", "consensus_opening"),
-        CAM_ANGLE_OFFSET=float(os.getenv("CAM_ANGLE_OFFSET", "0.0"))
+        CAM_ANGLE_OFFSET=float(os.getenv("CAM_ANGLE_OFFSET", "0.0")),
     )
 
 
