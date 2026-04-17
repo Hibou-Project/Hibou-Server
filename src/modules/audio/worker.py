@@ -1,32 +1,29 @@
-import datetime
-import time
-import os
-from collections import deque
-
-from src.arguments import args
-from src.helpers.decorators import SingletonMeta
-from src.logger import CustomLogger
-from src.modules.audio.localization.energy import compute_energy
 from src.modules.audio.streaming.debug.channel_spectrogram import (
     ChannelTimeSpectrogram,
     StftSpectrogram,
 )
-from src.modules.audio.streaming.debug.radar import RadarPlot
-
-logger = CustomLogger("audio").get_logger()
 from src.modules.audio.devices.audio_device_controller import ADCControllerManager
-from src.modules.audio.dispatcher import AudioDispatcher
-from src.modules.audio.streaming import GstChannel
-from src.modules.audio.streaming.play import play_sample
 from src.modules.audio.streaming.sources.file_source import FileAudioSource
 from src.modules.audio.streaming.sources.rtp_source import RTPAudioSource
-from src.settings import SETTINGS
+from src.modules.audio.localization.energy import compute_energy
+from src.modules.audio.streaming.debug.radar import RadarPlot
 from src.helpers.system_status import SystemStatusUpdater
+from src.modules.audio.dispatcher import AudioDispatcher
+from src.helpers.decorators import SingletonMeta
+from src.logger import CustomLogger
+from src.settings import SETTINGS
+from src.arguments import args
+
+import datetime
+import time
+import os
+
+logger = CustomLogger("audio").get_logger()
 
 
 class AudioWorker:
     """
-    Main class responsible for managing audio devices, streaming audio data and inferencing
+    Main class responsible for managing audio devices, streaming audio data, and inferencing
     """
 
     def __init__(self, dt: datetime.datetime):
@@ -53,7 +50,7 @@ class AudioWorker:
 
     def _load_devices(self):
         """
-        Load devices from configuration file or auto-discover them on the network.
+        Load devices from the configuration file or auto-discover them on the network.
         """
         if SETTINGS.DEVICES_CONFIG_PATH:
             self.controller_manager.load_devices_from_files(
@@ -142,7 +139,6 @@ class AudioWorker:
                 # Only for debug purposes
                 if SETTINGS.AUDIO_STFT_SPECTRUM and stft_spectrum_plot is not None:
                     stft_spectrum_plot.set_input([channel[0] for channel in channels])
-
 
             if stft_spectrum_plot:
                 stft_spectrum_plot.update()
