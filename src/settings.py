@@ -40,7 +40,6 @@ class Settings:
     STATIONARY: bool
 
     LOG_PATH: str
-    LOG_CONF_PATH: str
     LOG_LEVEL: str
 
     PTZ_USERNAME: str
@@ -114,7 +113,6 @@ try:
         STATIONARY=parse_bool(os.getenv("STATIONARY")),
         AI_DEVICE=os.getenv("AI_DEVICE"),
         LOG_PATH=os.getenv("LOG_PATH"),
-        LOG_CONF_PATH=os.getenv("LOG_CONF_PATH"),
         LOG_LEVEL=os.getenv("LOG_LEVEL"),
         INFER_FROM_FOLDER=os.getenv("INFER_FROM_FOLDER"),
         AUDIO_VOLUME=float(os.getenv("AUDIO_VOLUME")),
