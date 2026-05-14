@@ -1,17 +1,20 @@
-from src.modules.vision.streaming.video_streaming_publisher import VideoStreamingPublisher
+from src.modules.vision.streaming.video_streaming_publisher import (
+    VideoStreamingPublisher,
+)
 from src.modules.vision.streaming.video_source import VideoSource
 from .detection_recorder import DetectionRecording
 from ultralytics.engine.results import Results
 from .models.yolo_model import YOLOModel
+from src.logger import CustomLogger
 from collections import deque
 from pathlib import Path
+
 import threading
 import time
+import cv2
 
-from src.logger import CustomLogger
 
 logger = CustomLogger("vision").get_logger()
-import cv2
 
 
 class DroneDetection:
@@ -74,10 +77,9 @@ class DroneDetection:
             if any(len(result.boxes) > 0 for result in results):
                 self.results_queue.append(results)
 
+            annotated_frame = results[0].plot()
+            self.ipc_publisher.publish(annotated_frame)
             if self.enable_recording or display:
-                annotated_frame = results[0].plot()
-                self.ipc_publisher.publish(annotated_frame)
-
                 if self.enable_recording:
                     self.recording.update_frame(annotated_frame)
 
