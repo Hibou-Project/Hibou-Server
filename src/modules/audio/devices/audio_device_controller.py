@@ -39,13 +39,7 @@ class ADCControllerManager:
         Load controllers and devices from the controllers_devices.json configuration file.
         Populates self.controllers with controller instances.
         """
-        path = Path(json_path)
-        if not path.exists():
-            raise FileNotFoundError(
-                f"Controller configuration file not found: {json_path}"
-            )
-
-        data = read_json(path)
+        data = read_json(json_path)
         controllers_data = data.get("controllers", [])
         if not controllers_data:
             raise ValueError("No controllers found in the provided JSON file.")
