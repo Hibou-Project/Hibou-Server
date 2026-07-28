@@ -13,7 +13,7 @@ Hibou Server is a Python-based server application that serves as the backend for
 
 ### How to Run
 
-Visit [our documentation](https://pst4hibou.github.io/documentation/) to install and run the server.
+Visit [our documentation](https://hibou-project.github.io/documentation/) to install and run the server.
 
 ### Get in touch
 
